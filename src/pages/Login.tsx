@@ -9,9 +9,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Bot, Loader2, Mail, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { lovable } from '@/integrations/lovable';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Bot, Loader2, Mail, Lock } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -36,12 +33,11 @@ export default function Login() {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
+    const result = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: window.location.origin,
     });
-    if (error) {
-      toast({ title: 'Google sign in failed', description: error.message, variant: 'destructive' });
+    if (result?.error) {
+      toast({ title: 'Google sign in failed', description: String(result.error), variant: 'destructive' });
       setGoogleLoading(false);
     }
   };
@@ -64,44 +60,24 @@ export default function Login() {
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-9"
-                    required
-                  />
+                  <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-9" required />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-                    Forgot password?
-                  </Link>
+                  <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9"
-                    required
-                  />
+                  <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-9" required />
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Checkbox id="remember" />
-                <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
-                  Remember me
-                </label>
+                <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">Remember me</label>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
@@ -118,13 +94,7 @@ export default function Login() {
                 </div>
               </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleGoogleSignIn}
-                disabled={googleLoading}
-              >
+              <Button type="button" variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={googleLoading}>
                 {googleLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -143,9 +113,7 @@ export default function Login() {
           <CardFooter className="justify-center pb-6">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Link to="/register" className="font-medium text-primary hover:underline">
-                Sign up
-              </Link>
+              <Link to="/register" className="font-medium text-primary hover:underline">Sign up</Link>
             </p>
           </CardFooter>
         </Card>
