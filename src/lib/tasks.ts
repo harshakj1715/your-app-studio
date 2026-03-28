@@ -39,7 +39,13 @@ export async function createTask(task: TaskInsert): Promise<Task> {
     .select()
     .single();
   if (error) throw error;
-  return data as unknown as Task;
+  
+  const created = data as unknown as Task;
+  
+  // Send to Zapier if webhook is configured
+  triggerZapierWebhook('task_created', created);
+  
+  return created;
 }
 
 export async function updateTask(id: string, updates: Partial<TaskInsert> & { status?: string; completed_at?: string | null }): Promise<Task> {
@@ -50,7 +56,11 @@ export async function updateTask(id: string, updates: Partial<TaskInsert> & { st
     .select()
     .single();
   if (error) throw error;
-  return data as unknown as Task;
+  
+  const updated = data as unknown as Task;
+  triggerZapierWebhook('task_updated', updated);
+  
+  return updated;
 }
 
 export async function deleteTask(id: string): Promise<void> {
@@ -59,4 +69,24 @@ export async function deleteTask(id: string): Promise<void> {
     .delete()
     .eq('id', id);
   if (error) throw error;
+  
+  triggerZapierWebhook('task_deleted', { id });
+}
+
+function triggerZapierWebhook(event: string, data: unknown) {
+  const webhookUrl = localStorage.getItem('zapier_webhook_url');
+  if (!webhookUrl) return;
+  
+  // Fire-and-forget
+  fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    mode: 'no-cors',
+    body: JSON.stringify({
+      event,
+      timestamp: new Date().toISOString(),
+      source: 'NexaBot',
+      data,
+    }),
+  }).catch(console.error);
 }
