@@ -1,17 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Bot, LogOut, Home, MessageSquare, Clock, CalendarDays, User, Settings, HelpCircle } from 'lucide-react';
+import { Bot, LogOut, Home, MessageSquare, Clock, CalendarDays, FileText, Settings, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Dashboard' },
-  { path: '/chat', icon: MessageSquare, label: 'New Chat' },
-  { path: '/history', icon: Clock, label: 'History' },
+  { path: '/chat', icon: MessageSquare, label: 'Chat' },
   { path: '/tasks', icon: CalendarDays, label: 'Tasks' },
-  { path: '/profile', icon: User, label: 'Profile' },
+  { path: '/files', icon: FileText, label: 'Files' },
+  { path: '/history', icon: Clock, label: 'History' },
   { path: '/settings', icon: Settings, label: 'Settings' },
-  { path: '/help', icon: HelpCircle, label: 'Help' },
 ];
 
 export function AppHeader() {
