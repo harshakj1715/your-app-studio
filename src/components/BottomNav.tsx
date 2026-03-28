@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageSquare, Clock, CalendarDays, User } from 'lucide-react';
+import { Home, MessageSquare, CalendarDays, FileText, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/chat', icon: MessageSquare, label: 'Chat' },
-  { path: '/history', icon: Clock, label: 'History' },
   { path: '/tasks', icon: CalendarDays, label: 'Tasks' },
-  { path: '/profile', icon: User, label: 'Profile' },
+  { path: '/files', icon: FileText, label: 'Files' },
+  { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function BottomNav() {
