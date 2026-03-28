@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Tasks from "./pages/Tasks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/chat" element={<Chat />} />
               <Route path="/chat/:chatId" element={<Chat />} />
               <Route path="/history" element={<History />} />
+              <Route path="/tasks" element={<Tasks />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
