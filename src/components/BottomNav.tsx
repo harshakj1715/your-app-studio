@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, MessageSquare, CalendarDays, FileText, Settings } from 'lucide-react';
+import { Home, MessageSquare, CalendarDays, BarChart3, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/chat', icon: MessageSquare, label: 'Chat' },
   { path: '/tasks', icon: CalendarDays, label: 'Tasks' },
-  { path: '/files', icon: FileText, label: 'Files' },
+  { path: '/analytics', icon: BarChart3, label: 'Analytics' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -19,7 +19,7 @@ export function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-sm safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-sm safe-area-bottom md:hidden">
       <div className="flex h-16 items-center justify-around">
         {tabs.map((tab) => (
           <Link

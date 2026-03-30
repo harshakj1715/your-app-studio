@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +17,40 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Try to load custom system prompt for the user
+    let systemPrompt = `You are NexaBot, an intelligent AI assistant designed to help with customer service, personal productivity, and business automation. You are helpful, concise, and professional. You can help with:
+- Answering questions on any topic
+- Scheduling and task management suggestions
+- Writing and editing content
+- Problem-solving and brainstorming
+- Technical support and troubleshooting
+
+Format your responses using markdown when appropriate. Use bullet points, headers, and code blocks to organize information clearly.`;
+
+    const authHeader = req.headers.get("authorization");
+    if (authHeader) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+        const supabase = createClient(supabaseUrl, supabaseKey, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: config } = await supabase
+            .from("bot_config")
+            .select("system_prompt")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (config?.system_prompt) {
+            systemPrompt = config.system_prompt;
+          }
+        }
+      } catch {
+        // fallback to default prompt
+      }
+    }
+
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
@@ -27,17 +62,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            {
-              role: "system",
-              content: `You are NexaBot, an intelligent AI assistant designed to help with customer service, personal productivity, and business automation. You are helpful, concise, and professional. You can help with:
-- Answering questions on any topic
-- Scheduling and task management suggestions
-- Writing and editing content
-- Problem-solving and brainstorming
-- Technical support and troubleshooting
-
-Format your responses using markdown when appropriate. Use bullet points, headers, and code blocks to organize information clearly.`,
-            },
+            { role: "system", content: systemPrompt },
             ...messages,
           ],
           stream: true,

@@ -16,6 +16,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Tasks from "./pages/Tasks";
 import Files from "./pages/Files";
 import Settings from "./pages/Settings";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/history" element={<History />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/files" element={<Files />} />
+              <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
