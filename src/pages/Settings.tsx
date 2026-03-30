@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,8 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import {
-  Bell, BellOff, Webhook, ExternalLink, Loader2, CheckCircle2, XCircle
+  Bell, BellOff, Webhook, Loader2, CheckCircle2, XCircle, Bot, RotateCcw
 } from 'lucide-react';
 import {
   isPushSupported,
@@ -19,6 +21,15 @@ import {
   unsubscribeFromPush,
   showLocalNotification,
 } from '@/lib/push-notifications';
+
+const DEFAULT_SYSTEM_PROMPT = `You are NexaBot, an intelligent AI assistant designed to help with customer service, personal productivity, and business automation. You are helpful, concise, and professional. You can help with:
+- Answering questions on any topic
+- Scheduling and task management suggestions
+- Writing and editing content
+- Problem-solving and brainstorming
+- Technical support and troubleshooting
+
+Format your responses using markdown when appropriate. Use bullet points, headers, and code blocks to organize information clearly.`;
 
 export default function Settings() {
   const { user } = useAuth();
@@ -35,6 +46,11 @@ export default function Settings() {
   const [testingZapier, setTestingZapier] = useState(false);
   const [zapierStatus, setZapierStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
+  // AI Config state
+  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
+  const [savingPrompt, setSavingPrompt] = useState(false);
+  const [loadingPrompt, setLoadingPrompt] = useState(true);
+
   useEffect(() => {
     (async () => {
       const supported = await isPushSupported();
@@ -47,10 +63,46 @@ export default function Settings() {
     })();
   }, []);
 
+  // Load system prompt
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from('bot_config')
+        .select('system_prompt')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data?.system_prompt) setSystemPrompt(data.system_prompt);
+      setLoadingPrompt(false);
+    })();
+  }, [user]);
+
+  const handleSavePrompt = async () => {
+    if (!user) return;
+    setSavingPrompt(true);
+    try {
+      const { data: existing } = await supabase
+        .from('bot_config')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase.from('bot_config').update({ system_prompt: systemPrompt }).eq('user_id', user.id);
+      } else {
+        await supabase.from('bot_config').insert({ user_id: user.id, system_prompt: systemPrompt });
+      }
+      toast({ title: 'System prompt saved' });
+    } catch {
+      toast({ title: 'Failed to save prompt', variant: 'destructive' });
+    } finally {
+      setSavingPrompt(false);
+    }
+  };
+
   const handleTogglePush = async (enabled: boolean) => {
     if (!user) return;
     setLoadingPush(true);
-
     try {
       if (enabled) {
         const perm = await requestNotificationPermission();
@@ -87,10 +139,8 @@ export default function Settings() {
       toast({ title: 'Enter a webhook URL first', variant: 'destructive' });
       return;
     }
-
     setTestingZapier(true);
     setZapierStatus('idle');
-
     try {
       await fetch(zapierUrl, {
         method: 'POST',
@@ -114,18 +164,64 @@ export default function Settings() {
   };
 
   return (
-    <div className="container py-6 max-w-2xl">
+    <div className="container py-6 max-w-2xl space-y-4">
       <h1 className="text-2xl font-bold text-foreground mb-6">Settings</h1>
 
+      {/* AI Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Bot className="h-4 w-4" /> AI Configuration
+          </CardTitle>
+          <CardDescription>
+            Customize how NexaBot responds to your messages
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {loadingPrompt ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading...
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <Label>System Prompt</Label>
+                <Textarea
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  rows={8}
+                  className="font-mono text-xs leading-relaxed"
+                  placeholder="Enter the system prompt for the AI..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  This prompt defines the AI's personality and capabilities. Changes apply to new conversations.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleSavePrompt} disabled={savingPrompt}>
+                  {savingPrompt && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
+                  Save Prompt
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSystemPrompt(DEFAULT_SYSTEM_PROMPT)}
+                >
+                  <RotateCcw className="h-3 w-3 mr-1" /> Reset Default
+                </Button>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Push Notifications */}
-      <Card className="mb-4">
+      <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Bell className="h-4 w-4" /> Push Notifications
           </CardTitle>
-          <CardDescription>
-            Get notified about upcoming tasks and reminders
-          </CardDescription>
+          <CardDescription>Get notified about upcoming tasks and reminders</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {pushSupported ? (
@@ -159,9 +255,7 @@ export default function Settings() {
           <CardTitle className="text-base flex items-center gap-2">
             <Webhook className="h-4 w-4" /> Zapier Integration
           </CardTitle>
-          <CardDescription>
-            Connect to Google Calendar, Outlook, or other services via Zapier
-          </CardDescription>
+          <CardDescription>Connect to Google Calendar, Outlook, or other services via Zapier</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -170,7 +264,7 @@ export default function Settings() {
               <Input
                 placeholder="https://hooks.zapier.com/hooks/catch/..."
                 value={zapierUrl}
-                onChange={e => setZapierUrl(e.target.value)}
+                onChange={(e) => setZapierUrl(e.target.value)}
               />
               <Button variant="outline" size="sm" onClick={handleSaveZapier}>
                 Save
@@ -182,12 +276,7 @@ export default function Settings() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTestZapier}
-              disabled={testingZapier || !zapierUrl}
-            >
+            <Button variant="outline" size="sm" onClick={handleTestZapier} disabled={testingZapier || !zapierUrl}>
               {testingZapier ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
               Send Test
             </Button>
