@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Bot, LogOut, Home, MessageSquare, Clock, CalendarDays, FileText, Settings, HelpCircle } from 'lucide-react';
+import { Bot, LogOut, Home, MessageSquare, Clock, CalendarDays, FileText, Settings, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -9,8 +9,8 @@ const navItems = [
   { path: '/chat', icon: MessageSquare, label: 'Chat' },
   { path: '/tasks', icon: CalendarDays, label: 'Tasks' },
   { path: '/files', icon: FileText, label: 'Files' },
+  { path: '/analytics', icon: BarChart3, label: 'Analytics' },
   { path: '/history', icon: Clock, label: 'History' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function AppHeader() {
@@ -29,7 +29,7 @@ export function AppHeader() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
-          {navItems.slice(0, 5).map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
