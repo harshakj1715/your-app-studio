@@ -176,7 +176,7 @@ export default function Voice() {
             <p className="text-sm text-muted-foreground italic">"{transcript}"</p>
           )}
           {response && !isProcessing && (
-            <p className="text-sm text-foreground mt-2">{response.length > 200 ? response.slice(0, 200) + '...' : response}</p>
+            <p className="text-sm text-foreground mt-2 whitespace-pre-wrap text-left">{response}</p>
           )}
           {isProcessing && (
             <p className="text-sm text-muted-foreground animate-pulse">Thinking...</p>
