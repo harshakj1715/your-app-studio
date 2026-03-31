@@ -2,42 +2,35 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { streamChat, ChatMessage } from '@/lib/chat-stream';
 import { useToast } from '@/hooks/use-toast';
-import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Volume2, Square, ArrowLeft, Bot } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Mic, MicOff, ArrowLeft, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import VoiceMessageBubble from '@/components/voice/VoiceMessageBubble';
 
 export default function Voice() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [response, setResponse] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const recognitionRef = useRef<any>(null);
-  const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-  const speak = useCallback((text: string) => {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    synthRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
 
   const handleVoiceResult = useCallback(async (spokenText: string) => {
     if (!user || !spokenText.trim()) return;
     setIsProcessing(true);
-    setResponse('');
 
     const userMsg: ChatMessage = { role: 'user', content: spokenText };
     const updatedMessages = [...messages, userMsg];
@@ -49,13 +42,17 @@ export default function Voice() {
         messages: updatedMessages,
         onDelta: (chunk) => {
           assistantContent += chunk;
-          setResponse(assistantContent);
+          // Live-update the assistant message
+          setMessages(prev => {
+            const last = prev[prev.length - 1];
+            if (last?.role === 'assistant') {
+              return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
+            }
+            return [...prev, { role: 'assistant', content: assistantContent }];
+          });
         },
         onDone: () => {
-          setMessages(prev => [...prev, { role: 'assistant', content: assistantContent }]);
           setIsProcessing(false);
-          // Only speak a brief confirmation, not the full response
-          speak("Here's what I found.");
         },
         onError: (error) => {
           toast({ title: 'AI Error', description: error, variant: 'destructive' });
@@ -66,7 +63,7 @@ export default function Voice() {
       toast({ title: 'Error', description: 'Failed to get response', variant: 'destructive' });
       setIsProcessing(false);
     }
-  }, [user, messages, speak, toast]);
+  }, [user, messages, toast]);
 
   const startListening = useCallback(() => {
     if (!SpeechRecognition) {
@@ -75,7 +72,6 @@ export default function Voice() {
     }
 
     window.speechSynthesis.cancel();
-    setIsSpeaking(false);
 
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
@@ -93,9 +89,7 @@ export default function Voice() {
         }
       }
       setTranscript(final || interim);
-      if (final) {
-        handleVoiceResult(final);
-      }
+      if (final) handleVoiceResult(final);
     };
 
     recognition.onerror = (event: any) => {
@@ -105,9 +99,7 @@ export default function Voice() {
       setIsListening(false);
     };
 
-    recognition.onend = () => {
-      setIsListening(false);
-    };
+    recognition.onend = () => setIsListening(false);
 
     recognitionRef.current = recognition;
     recognition.start();
@@ -118,11 +110,6 @@ export default function Voice() {
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
     setIsListening(false);
-  }, []);
-
-  const stopSpeaking = useCallback(() => {
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
   }, []);
 
   useEffect(() => {
@@ -145,73 +132,46 @@ export default function Voice() {
         <div>
           <p className="font-semibold text-sm text-foreground">Voice Chat</p>
           <p className="text-xs text-muted-foreground">
-            {isListening ? 'Listening...' : isSpeaking ? 'Speaking...' : isProcessing ? 'Thinking...' : 'Tap mic to talk'}
+            {isListening ? 'Listening...' : isProcessing ? 'Thinking...' : 'Tap mic to talk'}
           </p>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 gap-8">
-        {/* Visualizer circle */}
-        <div className={`relative flex items-center justify-center w-40 h-40 rounded-full transition-all duration-500 ${
-          isListening
-            ? 'bg-destructive/10 ring-4 ring-destructive/30 animate-pulse'
-            : isSpeaking
-            ? 'bg-primary/10 ring-4 ring-primary/30 animate-pulse'
-            : isProcessing
-            ? 'bg-accent/20 ring-2 ring-accent/30'
-            : 'bg-muted'
-        }`}>
-          {isListening ? (
-            <Mic className="h-12 w-12 text-destructive" />
-          ) : isSpeaking ? (
-            <Volume2 className="h-12 w-12 text-primary" />
-          ) : (
-            <Mic className="h-12 w-12 text-muted-foreground" />
-          )}
-        </div>
-
-        {/* Transcript */}
-        <div className="text-center max-w-md min-h-[3rem]">
-          {transcript && (
-            <p className="text-sm text-muted-foreground italic">"{transcript}"</p>
-          )}
-          {response && !isProcessing && (
-            <div className="text-sm text-foreground mt-2 text-left prose prose-sm dark:prose-invert max-w-none">
-              <ReactMarkdown>{response}</ReactMarkdown>
+      {/* Messages */}
+      <ScrollArea className="flex-1 px-4 py-4">
+        {messages.length === 0 && !isProcessing && (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground py-20">
+            <Bot className="h-10 w-10 mb-3 opacity-40" />
+            <p className="text-sm">Tap the mic and start speaking</p>
+          </div>
+        )}
+        {messages.map((msg, i) => (
+          <VoiceMessageBubble key={i} message={msg} />
+        ))}
+        {isListening && transcript && (
+          <div className="flex justify-end mb-3">
+            <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm bg-primary/60 text-primary-foreground italic">
+              {transcript}...
             </div>
-          )}
-          {isProcessing && (
-            <p className="text-sm text-muted-foreground animate-pulse">Thinking...</p>
-          )}
-        </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </ScrollArea>
 
-        {/* Controls */}
-        <div className="flex gap-4">
-          {isListening ? (
-            <Button size="lg" variant="destructive" onClick={stopListening} className="rounded-full h-14 w-14">
-              <MicOff className="h-6 w-6" />
-            </Button>
-          ) : (
-            <Button
-              size="lg"
-              onClick={startListening}
-              disabled={isProcessing}
-              className="rounded-full h-14 w-14"
-            >
-              <Mic className="h-6 w-6" />
-            </Button>
-          )}
-          {isSpeaking && (
-            <Button size="lg" variant="outline" onClick={stopSpeaking} className="rounded-full h-14 w-14">
-              <Square className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
-
+      {/* Mic controls */}
+      <div className="flex flex-col items-center gap-2 border-t border-border py-4 bg-card/80 backdrop-blur-sm">
+        {isListening ? (
+          <Button size="lg" variant="destructive" onClick={stopListening} className="rounded-full h-14 w-14 animate-pulse">
+            <MicOff className="h-6 w-6" />
+          </Button>
+        ) : (
+          <Button size="lg" onClick={startListening} disabled={isProcessing} className="rounded-full h-14 w-14">
+            <Mic className="h-6 w-6" />
+          </Button>
+        )}
         {!SpeechRecognition && (
           <p className="text-xs text-destructive text-center">
-            Speech recognition is not supported in this browser. Please use Chrome or Edge.
+            Speech recognition not supported. Please use Chrome or Edge.
           </p>
         )}
       </div>
