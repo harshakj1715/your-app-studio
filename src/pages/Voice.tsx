@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { streamChat, ChatMessage } from '@/lib/chat-stream';
 import { useToast } from '@/hooks/use-toast';
+import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Volume2, Square, ArrowLeft, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -176,7 +177,9 @@ export default function Voice() {
             <p className="text-sm text-muted-foreground italic">"{transcript}"</p>
           )}
           {response && !isProcessing && (
-            <p className="text-sm text-foreground mt-2 whitespace-pre-wrap text-left">{response}</p>
+            <div className="text-sm text-foreground mt-2 text-left prose prose-sm dark:prose-invert max-w-none">
+              <ReactMarkdown>{response}</ReactMarkdown>
+            </div>
           )}
           {isProcessing && (
             <p className="text-sm text-muted-foreground animate-pulse">Thinking...</p>
