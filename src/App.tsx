@@ -44,6 +44,7 @@ const App = () => (
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/files" element={<Files />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/voice" element={<Voice />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
