@@ -18,6 +18,7 @@ import Tasks from "./pages/Tasks";
 import Files from "./pages/Files";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
+import Voice from "./pages/Voice";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/files" element={<Files />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/voice" element={<Voice />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
