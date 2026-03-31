@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { streamChat, ChatMessage } from '@/lib/chat-stream';
 import { useToast } from '@/hooks/use-toast';
+import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Volume2, Square, ArrowLeft, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
