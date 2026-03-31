@@ -53,7 +53,8 @@ export default function Voice() {
         onDone: () => {
           setMessages(prev => [...prev, { role: 'assistant', content: assistantContent }]);
           setIsProcessing(false);
-          speak(assistantContent);
+          // Only speak a brief confirmation, not the full response
+          speak("Here's what I found.");
         },
         onError: (error) => {
           toast({ title: 'AI Error', description: error, variant: 'destructive' });
