@@ -177,7 +177,9 @@ export default function Voice() {
             <p className="text-sm text-muted-foreground italic">"{transcript}"</p>
           )}
           {response && !isProcessing && (
-            <p className="text-sm text-foreground mt-2 whitespace-pre-wrap text-left">{response}</p>
+            <div className="text-sm text-foreground mt-2 text-left prose prose-sm dark:prose-invert max-w-none">
+              <ReactMarkdown>{response}</ReactMarkdown>
+            </div>
           )}
           {isProcessing && (
             <p className="text-sm text-muted-foreground animate-pulse">Thinking...</p>
