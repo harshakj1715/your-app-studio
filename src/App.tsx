@@ -18,6 +18,7 @@ import Tasks from "./pages/Tasks";
 import Files from "./pages/Files";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
+import Voice from "./pages/Voice";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
