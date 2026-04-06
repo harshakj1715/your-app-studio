@@ -3,6 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Send, Mic, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
