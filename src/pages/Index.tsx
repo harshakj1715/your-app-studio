@@ -31,7 +31,7 @@ export default function Index() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {quickActions.map((action) => (
           <Link key={action.label} to={action.path}>
             <Card className="cursor-pointer border-border/50 transition-all hover:shadow-md hover:-translate-y-0.5 h-full">
