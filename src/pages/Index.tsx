@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
-import { MessageSquare, CalendarDays, Mic, Sparkles } from 'lucide-react';
+import { MessageSquare, CalendarDays, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getConversations } from '@/lib/conversations';
@@ -18,7 +18,6 @@ export default function Index() {
   const quickActions = [
     { icon: MessageSquare, label: 'New Chat', description: 'Start a conversation', color: 'text-primary', path: '/chat' },
     { icon: CalendarDays, label: 'Schedule', description: 'Manage your tasks', color: 'text-accent', path: '/tasks' },
-    { icon: Mic, label: 'Voice Chat', description: 'Talk hands-free', color: 'text-warning', path: '/voice' },
     { icon: Sparkles, label: 'Ask Anything', description: 'Get instant answers', color: 'text-success', path: '/chat' },
   ];
 
