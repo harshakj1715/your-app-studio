@@ -177,8 +177,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase('hold'), 1500);
-    const t2 = setTimeout(() => setPhase('fade'), 2500);
-    const t3 = setTimeout(onComplete, 3200);
+    const t2 = setTimeout(() => setPhase('fade'), 3500);
+    const t3 = setTimeout(onComplete, 4200);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
