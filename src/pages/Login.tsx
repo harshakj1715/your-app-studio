@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Bot, Loader2, Mail, Lock } from 'lucide-react';
+import { Loader2, Mail, Lock } from 'lucide-react';
+import nexabotLogo from '@/assets/nexabot-logo.png';
 import { useToast } from '@/hooks/use-toast';
 import { lovable } from '@/integrations/lovable';
 
@@ -46,9 +47,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-            <Bot className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <img src={nexabotLogo} alt="NexaBot" className="mx-auto mb-2 h-20 w-auto rounded-xl object-contain" />
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome back</h1>
           <p className="mt-1 text-sm text-muted-foreground">Sign in to your NexaBot account</p>
         </div>
