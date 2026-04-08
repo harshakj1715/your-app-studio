@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, KeyboardEvent, useCallback } from 'react';
-import { Send, Mic, Square, Plus, X, FileText, Image, FileSpreadsheet } from 'lucide-react';
+import { Send, Mic, Square, Plus, X, FileText, Image, FileSpreadsheet, Camera, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 declare global {
   interface Window {
@@ -168,16 +169,61 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         )}
 
         <div className="relative flex items-end rounded-full border border-border bg-card shadow-sm transition-shadow focus-within:shadow-md focus-within:border-primary/30">
-          {/* File attach button */}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200 ml-1.5 mb-1.5 shrink-0"
-            title="Attach file"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+          {/* Attach menu */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                disabled={disabled}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-200 ml-1.5 mb-1.5 shrink-0"
+                title="Attach"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="top" align="start" className="w-48 p-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.capture = 'environment';
+                  input.onchange = (e) => handleFileSelect(e as any);
+                  input.click();
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                <Camera className="h-4 w-4 text-primary" />
+                Camera
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.multiple = true;
+                  input.accept = '.png,.jpg,.jpeg,.gif,.webp';
+                  input.onchange = (e) => handleFileSelect(e as any);
+                  input.click();
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                <Image className="h-4 w-4 text-success" />
+                Photos
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                <FolderOpen className="h-4 w-4 text-warning" />
+                Folder
+              </button>
+            </PopoverContent>
+          </Popover>
           <input
             ref={fileInputRef}
             type="file"
