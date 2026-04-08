@@ -184,13 +184,41 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             <PopoverContent side="top" align="start" className="w-48 p-1.5">
               <button
                 type="button"
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = 'image/*';
-                  input.capture = 'environment';
-                  input.onchange = (e) => handleFileSelect(e as any);
-                  input.click();
+                onClick={async () => {
+                  try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    // Create a video element to capture a frame
+                    const video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', 'true');
+                    await video.play();
+
+                    // Wait a moment for the camera to initialize
+                    await new Promise((r) => setTimeout(r, 500));
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d')?.drawImage(video, 0, 0);
+
+                    // Stop the stream
+                    stream.getTracks().forEach((t) => t.stop());
+
+                    canvas.toBlob((blob) => {
+                      if (!blob) return;
+                      const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                      const preview = URL.createObjectURL(blob);
+                      setAttachments((prev) => [...prev, { file, preview, type: 'image/jpeg' }]);
+                    }, 'image/jpeg', 0.9);
+                  } catch {
+                    // Fallback: open file picker with capture
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.capture = 'environment';
+                    input.onchange = (e) => handleFileSelect(e as any);
+                    input.click();
+                  }
                 }}
                 className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
               >
