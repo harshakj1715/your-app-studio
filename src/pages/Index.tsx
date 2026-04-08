@@ -2,7 +2,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { MessageSquare, CalendarDays, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import nexabotLogo from '@/assets/nexabot-logo.png';
 import { useEffect, useState } from 'react';
 import { getConversations } from '@/lib/conversations';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,14 +23,11 @@ export default function Index() {
 
   return (
     <main className="container py-6 space-y-8 animate-fade-in">
-      <div className="flex items-center gap-4">
-        <img src={nexabotLogo} alt="NexaBot" className="h-14 w-auto rounded-xl object-contain" />
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Welcome{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ''}
-          </h1>
-          <p className="mt-1 text-muted-foreground">What can I help you with today?</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          Welcome{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ''}
+        </h1>
+        <p className="mt-1 text-muted-foreground">What can I help you with today?</p>
       </div>
 
       {/* Quick Actions */}
